@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Match it!</title>
+  <style>
+    :root {
+      --noun-light: #7f9ccb;
+      --verb-light: #f49d82;
+      --adj-light: #ffd18d;
+      --neutral-light: #ccd4e0;
+
+      --noun-dark: #5f7baf;
+      --verb-dark: #cc6f50;
+      --adj-dark: #dcae60;
+      --neutral-dark: #4a4f5a;
+
+      --bg-light: #ffffff;
+      --bg-dark: #1e1e2f;
+      --text-light: #333333;
+      --text-dark: #f0f0f0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Comic Neue', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .hidden { display: none; }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      font-size: 2em;
+    }
+
+    .title-tagline {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 1.2em;
+      opacity: 0.8;
+    }
+
+    #start-screen {
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .lesson-button {
+      padding: 15px 25px;
+      margin: 10px;
+      font-size: 1.2em;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--neutral-light);
+      transition: background-color 0.3s;
+    }
+
+    body.dark .lesson-button {
+      background-color: var(--neutral-dark);
+    }
+
+    #game {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      max-width: 90vw;
+      margin: auto;
+    }
+
+    .word-box {
+      width: 160px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s;
+    }
+
+    .noun { background-color: var(--noun-light); }
+    .verb { background-color: var(--verb-light); }
+    .adjective { background-color: var(--adj-light); }
+    .neutral { background-color: var(--neutral-light); }
+
+    body.dark .noun { background-color: var(--noun-dark); }
+    body.dark .verb { background-color: var(--verb-dark); }
+    body.dark .adjective { background-color: var(--adj-dark); }
+    body.dark .neutral { background-color: var(--neutral-dark); }
+
+    .highlight {
+      outline: 4px dashed #999;
+    }
+
+    #score {
+      margin-top: 10px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+
+    .dark-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background: var(--neutral-light);
+    }
+
+    body.dark .dark-toggle {
+      background: var(--neutral-dark);
+      color: white;
+    }
+
+    .shake {
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(1px, 1px); }
+      25% { transform: translate(-2px, 1px); }
+      50% { transform: translate(2px, -1px); }
+      75% { transform: translate(-1px, -1px); }
+      100% { transform: translate(1px, 1px); }
+    }
+
+    .flash-red {
+      background-color: #ff4c4c !important;
+    }
+  </style>
+</head>
+<body>
+  <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+  <header>
+    Match it!
+    <div class="title-tagline">
+      <span>日本語</span> | <span>英語</span>
+    </div>
+  </header>
+
+  <div id="start-screen">
+    <h2>Select a Lesson</h2>
+    <button class="lesson-button" onclick="startGame(1)">Lesson 1</button>
+    <button class="lesson-button" onclick="startGame(2)">Lesson 2</button>
+    <button class="lesson-button" onclick="startGame(3)">Lesson 3</button>
+    <button class="lesson-button" onclick="startGame(4)">Lesson 4</button>
+  </div>
+
+  <div id="game-screen" class="hidden">
+    <div id="score">Score: 0</div>
+    <div id="game"></div>
+  </div>
+
+  <script>
+    const words = [
+      { english: "apple", japanese: "りんご", type: "noun" },
+      { english: "run", japanese: "走る", type: "verb" },
+      { english: "happy", japanese: "うれしい", type: "adjective" },
+      { english: "book", japanese: "本", type: "noun" }
+    ];
+
+    let score = 0;
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
+
+    function startGame(lesson) {
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+      initGame(words); // Placeholder; later swap with lesson-specific list
+    }
+
+    function initGame(wordList) {
+      const gameArea = document.getElementById('game');
+      gameArea.innerHTML = '';
+      score = 0;
+      updateScore();
+
+      const shuffled = [...wordList].sort(() => Math.random() - 0.5);
+
+      const englishWords = shuffled.map(w => {
+        const div = document.createElement('div');
+        div.className = `word-box ${w.type}`;
+        div.textContent = w.english;
+        div.setAttribute('draggable', true);
+        div.dataset.type = w.type;
+        div.dataset.word = w.english;
+        div.addEventListener('dragstart', dragStart);
+        div.addEventListener('touchstart', handleTouchStart, { passive: true });
+        speak(w.english);
+        return div;
+      });
+
+      const japaneseWords = shuffled.map(w => {
+        const div = document.createElement('div');
+        div.className = 'word-box neutral';
+        div.textContent = w.japanese;
+        div.dataset.match = w.english;
+        div.addEventListener('dragover', dragOver);
+        div.addEventListener('drop', drop);
+        div.addEventListener('touchmove', handleTouchMove, { passive: false });
+        div.addEventListener('touchend', handleTouchEnd);
+        return div;
+      });
+
+      [...englishWords, ...japaneseWords].sort(() => Math.random() - 0.5).forEach(el => gameArea.appendChild(el));
+    }
+
+    function updateScore() {
+      document.getElementById('score').textContent = `Score: ${score}`;
+    }
+
+    function dragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.dataset.word);
+      speak(e.target.dataset.word);
+    }
+
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      const droppedWord = e.dataTransfer.getData('text/plain');
+      const correct = e.target.dataset.match;
+
+      if (droppedWord === correct) {
+        e.target.textContent = '';
+        e.target.classList.add('correct');
+        document.querySelector(`[data-word='${droppedWord}']`).remove();
+        score++;
+        updateScore();
+        confettiBurst(e.target);
+      } else {
+        e.target.classList.add('flash-red');
+        setTimeout(() => e.target.classList.remove('flash-red'), 400);
+      }
+    }
+
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utter);
+    }
+
+    function handleTouchStart(e) {
+      e.target.dataset.touching = true;
+    }
+
+    function handleTouchMove(e) {
+      e.preventDefault();
+    }
+
+    function handleTouchEnd(e) {
+      // Placeholder: implement full touch-match logic if needed
+    }
+
+    function confettiBurst(target) {
+      // Placeholder for cute confetti animation
+      target.style.transform = 'scale(1.1)';
+      setTimeout(() => target.style.transform = 'scale(1)', 300);
+    }
+  </script>
+</body>
+</html>
