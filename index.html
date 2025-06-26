@@ -239,19 +239,27 @@
     }
   }
 
-  // Play audio for English word
   function playAudio(word) {
-    // For demo: use Web Speech API to speak English word
-    if ('speechSynthesis' in window) {
-      speechSynthesis.cancel(); // Stop any ongoing
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = "en-US";
-      speechSynthesis.speak(utterance);
-    } else {
-      // Fallback or no audio
-      console.log("Audio not supported");
+  if ('speechSynthesis' in window) {
+    speechSynthesis.cancel();
+
+    // Select Australian English voice if available
+    const voices = speechSynthesis.getVoices();
+    let australianVoice = voices.find(v => v.lang.startsWith('en-AU'));
+    if (!australianVoice) {
+      australianVoice = voices.find(v => v.lang.startsWith('en')); // fallback to any English
     }
+
+    const utterance = new SpeechSynthesisUtterance(word);
+    if (australianVoice) {
+      utterance.voice = australianVoice;
+    }
+    utterance.lang = "en-AU";
+    speechSynthesis.speak(utterance);
+  } else {
+    console.log("Audio not supported");
   }
+}
 
   // Init game on load
   window.addEventListener("DOMContentLoaded", initGame);
